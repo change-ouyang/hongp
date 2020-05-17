@@ -3,25 +3,25 @@
         <div class="body">
             <!-- 头像 -->
             <div class="user-photo">
-                <img :src="avatar" alt="">
+                <img mode='scaleToFill' :src="avatar" alt="">
                 <p style="margin-top:5px">{{name}}</p>
             </div>
             <!-- 数据 -->
             <div class="data">
                 <div>
-                    <p>6</p>
+                    <p>{{i}}</p>
                     <p>排名</p>
                 </div>
                 <div>
-                    <p>32</p>
+                    <p>{{ticket}}</p>
                     <p>票数</p>
                 </div>
                 <div>
-                    <p>0</p>
+                    <p>{{gift}}</p>
                     <p>礼物</p>
                 </div>
                 <div>
-                    <p>1064</p>
+                    <p>{{browse}}</p>
                     <p>浏览量</p>
                 </div>
             </div>
@@ -29,14 +29,15 @@
             <div class="des">
                 <p>选手描述</p>
                 <div>
-                    这人很懒，什么都没有留下~
+                    <span v-if="describesshow">这人很懒，什么都没有留下~</span>
+                    <span v-if="!describesshow">{{describes}}</span>
                 </div>
             </div>
             <!-- 选手照片 -->
             <div class="player-photo">
                 <p>选手照片</p>
-                <div>
-                    <img :src="photo" alt="">
+                <div class="image" v-for="(item, index) in photo" :key="index" @click="bigphoto(item.url)">
+                    <img mode='widthFix' :src="item.url" alt="">
                 </div>
             </div>
             <!-- 贡献 -->
@@ -44,56 +45,44 @@
                 <div class="one">
                     <p>票数贡献榜</p>
                 </div>
-                <div class="two">
-                    <img src="../../../static/images/xin.png" alt="">
-                    <p>喜欢我的人，在这里驻留</p>
-                </div>
-                <div class="three" @click="togift">
-                    送ta礼物加票
+                <div class="giftuser">
+                    <div v-show="giftshow">
+                        <div class="two">
+                            <img src="../../../static/images/xin.png" alt="">
+                            <p>喜欢我的人，在这里驻留</p>
+                        </div>
+                        <div class="three" @click="togift">
+                            送ta礼物加票
+                        </div>
+                    </div>
+                    <div class="giftlist scrollcolor" v-show="!giftshow" v-for="(item, index) in Giftlist" :key="index">
+                        <div>
+                            <img :src="item.extend3" alt="">
+                        </div>
+                        <div>
+                            <p>{{item.extend2}}</p>
+                        </div>
+                        <div>
+                            <p>{{item.zps}}票</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- 投票记录 -->
             <div class="record">
                 <p class="title">投票记录</p>
-                <div class="detail">
+                <div class="detail" v-for="(item, index) in ticketlist" :key="index">
                     <div>
-                        <p style="margin-bottom:5px">胡歌</p>
-                        <p>2020-04-21 11:11</p>
+                        <p style="margin-bottom:5px">{{item.extend2}}</p>
+                        <p>{{item.createTime}}</p>
                     </div>
                     <div class="count">
-                        +1
-                    </div>
-                </div>
-                <div class="detail">
-                    <div>
-                        <p style="margin-bottom:5px">胡歌</p>
-                        <p>2020-04-21 11:11</p>
-                    </div>
-                    <div class="count">
-                        +1
-                    </div>
-                </div>
-                <div class="detail">
-                    <div>
-                        <p style="margin-bottom:5px">胡歌</p>
-                        <p>2020-04-21 11:11</p>
-                    </div>
-                    <div class="count">
-                        +1
-                    </div>
-                </div>
-                <div class="detail">
-                    <div>
-                        <p style="margin-bottom:5px">胡歌</p>
-                        <p>2020-04-21 11:11</p>
-                    </div>
-                    <div class="count">
-                        +1
+                        +{{item.extend3}}
                     </div>
                 </div>
             </div>
             <!-- 查看更多 -->
-            <div class="more">
+            <div class="more" @click="domore()">
                 <h3>查看跟多</h3>
             </div>
             <!-- footer -->
@@ -115,53 +104,139 @@
     </div>
 </template>
 <script>
+import fly from '../../api/hongp'
 export default {
     data() {
         return {
-            playerdata:[
-                {"id":"0","name":"杨幂","rank":"1","ticket":"246","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=481823748,3803020137&fm=58&app=83&f=JPEG?w=250&h=250&s=B9166094023B4794C78571F803008034"},
-                {"id":"1","name":"刘诗诗","rank":"2","ticket":"235","price":"18","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3301421587,374458331&fm=58&app=83&f=JPEG?w=250&h=250&s=DA88AF476E23768C991018B303008060"},
-                {"id":"2","name":"赵丽颖","rank":"3","ticket":"211","img":"https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1833321872,1873644000&fm=58&app=83&f=JPEG?w=250&h=250&s=54F813D7523B5394D7AF02A003007029"},
-                {"id":"3","name":"杨紫","rank":"4","ticket":"190","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=2750998680,3202774404&fm=58&app=83&f=JPEG?w=250&h=250&s=50251F704B234A191C4C31D30300C0A2"},
-                {"id":"4","name":"唐嫣","rank":"5","ticket":"182","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3725561364,1533965488&fm=58&app=83&f=JPEG?w=250&h=250&s=BEA3F3077E236E152080197D0300D038"},
-                {"id":"5","name":"范冰冰","rank":"6","ticket":"170","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=4147546222,1928275276&fm=58&app=83&f=JPEG?w=250&h=250&s=4DECA844EC3A6294D40834D80300D090"},
-                {"id":"6","name":"江疏影","rank":"7","ticket":"159","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1791842419,2459555808&fm=58&app=83&f=JPEG?w=250&h=250&s=AB02CF0038BB7294C49C60DE0300E0B0"},
-                {"id":"7","name":"佟丽娅","rank":"8","ticket":"142","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1959205732,3947920150&fm=58&app=83&f=JPEG?w=250&h=250&s=7D2BBF578A335784329870E90300A068"},
-                {"id":"8","name":"刘涛","rank":"9","ticket":"135","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3015639301,787232821&fm=58&app=83&f=JPEG?w=250&h=250&s=1A21716CD432059C95E872980300C09C"},
-                {"id":"9","name":"林心如","rank":"10","ticket":"123","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=2591412328,489739705&fm=58&app=83&f=JPG?w=250&h=250&s=A5FA7397162366B4043070E20300E022"},
-            ],
+            Giftlist:[],
             id:'',
-            avatar:'',
-            name:'',
-            photo:'',
+            i:'', //排名
+            avatar:'', //头像
+            name:'', //姓名
+            photo:[], //图片
+            ticket:'', //票数
+            gift:'', //礼物
+            browse:'', //浏览量
+            giftshow:true , //礼物的显示和隐藏
+            describes:'',
+            describesshow:false, //描述的显示和隐藏
+            ticketdata:[], //投票总数组
+            ticketlist:[], //投票小数组
+            pageSize:5, //一页的数量
+            pageNum:1, //页码
         }
     },
     onLoad(options){
-        let list=this.playerdata.filter((item)=>item.id==options.id)
-        console.log(list[0].name);
-        this.id=list[0].id
-        this.avatar=list[0].img
-        this.name=list[0].name
-        this.photo=list[0].img
+        this.id=options.id
+        this.player() //调用所有页面数据
+    },
+    // 下拉刷新页面数据
+    onPullDownRefresh() {
+        this.player() //调用所有页面数据
+        setTimeout(() => {
+            wx.stopPullDownRefresh();            
+        }, 1500);
     },
     methods: {
+        //页面所有数据
+        player(){
+            //选手信息
+            this.$fly.post(fly.getplayerdetail,{activityId:1,id:this.id})
+            .then((res)=>{
+                // console.log(res.data.data);
+                let {i,ticket,gift,browse,name,coverImg,describes}=res.data.data.player
+                this.i=i
+                this.avatar=coverImg
+                this.name=name
+                this.ticket=ticket
+                this.gift=gift
+                this.browse=browse
+                //描述
+                this.describes=describes
+                // console.log(this.describes);
+                if(this.describes==null){
+                    this.describesshow=true
+                }else{
+                    this.describesshow=false
+                }
+                //图片
+                this.photo=res.data.data.playerImg
+                // console.log(this.photo);
+                //礼物
+                this.Giftlist=res.data.data.hdPlayerGiftlist
+                // console.log(this.Giftlist);
+                if(this.Giftlist.length==0){
+                    this.giftshow=true
+                }else{
+                    this.giftshow=false
+                }
+            })
+            //投票记录
+            this.pageNum=1 //初始化页码
+            this.$fly.post(fly.getplayerticket,{playerId:this.id,pageSize:'',pageNum:''})
+            .then((res)=>{
+                // console.log(res.data.rows);
+                this.ticketdata=res.data.rows
+                this.ticketlist=this.ticketdata.slice(0,5)
+            })
+        },
+        //投票查看更多
+        domore(){
+            this.pageNum++;
+            this.$fly.post(fly.getplayerticket,{playerId:this.id,pageSize:'',pageNum:''})
+            .then((res)=>{
+                this.ticketdata=res.data.rows
+                this.ticketlist=this.ticketdata.slice(0,this.pageSize*this.pageNum)
+            })
+            if(this.ticketlist.length==this.ticketdata.length){
+                wx.showToast({
+                    title: '已无更多',
+                    icon: 'none',
+                    duration: 2000
+                })
+            }
+            console.log(this.pageNum);
+        },
+        //投票
+        dovote(){
+            let that=this
+            var values=wx.getStorageSync('key')
+            var user=wx.getStorageSync('userInfo')
+            this.$fly.post(fly.getvote,{
+                extend1:values,
+                extend2:user.nickName,
+                extend3:1,
+                playerId:this.id
+            })
+            .then((res)=>{
+                // console.log(res.data);
+                if(res.data.success==false){
+                    wx.showModal({
+                    title: '提示',
+                    content: '一个微信号每天只能投3票',
+                    success (res) {
+                        if (res.confirm) {
+                            console.log('用户点击确定')
+                        } else if (res.cancel) {
+                            console.log('用户点击取消')
+                        }
+                    }
+                })
+                }
+            })
+            
+        },
         //去首页
         toactivety(){
             let url='../activety-item/main'
             wx.switchTab({url})
         },
-        //投票
-        dovote(){
-            wx.showModal({
-                title: '提示',
-                content: '一个微信号每天只能投3票',
-                success (res) {
-                    if (res.confirm) {
-                        console.log('用户点击确定')
-                    } else if (res.cancel) {
-                        console.log('用户点击取消')
-                    }
-                }
+        //查看图片
+        bigphoto(url){
+            // console.log(url);
+            wx.previewImage({
+                current: 'url', // 当前显示图片的http链接
+                urls: [url] // 需要预览的图片http链接列表
             })
         },
         //去礼物
@@ -185,7 +260,7 @@ export default {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin-top: 15px;
+        padding-top: 20px;
         background: white;
     }
     .user-photo img{
@@ -233,7 +308,7 @@ export default {
     }
     .des div{
         width: 100%;
-        height: 40px;
+        height: 50px;
         margin-top: 10px;
     }
     .player-photo{
@@ -258,20 +333,21 @@ export default {
     }
     .player-photo div{
         width: 100%;
-        margin-top: 10px;
-        padding: 10px;
-        padding-bottom: 15px;
+        margin-top: 5px;
+        padding: 5px;
+        padding-bottom: 5px;
         box-sizing: border-box;
     }
-    .player-photo div img{
+    .player-photo .image{
         width: 100%;
+    }
+    .player-photo .image img{
+        width:100%;
     }
     .contri{
         width: 100%;
         margin-top: 15px;
-        padding-bottom: 50px;
         background: #F2F4F7;
-        overflow: scroll;
     }
     .contri .one{
         width: 100%;
@@ -311,9 +387,50 @@ export default {
         background: #31C9B1;
         color: white;
     }
+    .giftuser{
+        width: 100%;
+        height: 240px;
+        overflow: scroll;
+    }
+    .scrollcolor{
+        scrollbar-face-color: #3388FF; 
+        scrollbar-shadow-color: #3388FF; 
+        scrollbar-highlight-color: #3388FF; 
+        scrollbar-3dlight-color: #3388FF; 
+        scrollbar-darkshadow-color: #3388FF; 
+        scrollbar-track-color: #3388FF; 
+        scrollbar-arrow-color: #3388FF; 
+    }
+    .giftlist{
+        width: 100%;
+        height: 70px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        box-sizing: border-box;
+        box-shadow: 0px 0px 2px gray;
+    }
+    .giftlist div:nth-child(1){
+        flex: 2;
+    }
+    .giftlist div:nth-child(1) img{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-left: 10px;
+    }
+    .giftlist div:nth-child(2){
+        flex: 6;
+        color: gray;
+        text-indent: 1.5em;
+    }
+    .giftlist div:nth-child(3){
+        flex: 2;
+        color: #31C9B1;
+    }
     .record{
         width: 100%;
-        margin-top: 10px;
         background: white;
     }
     .record .title{

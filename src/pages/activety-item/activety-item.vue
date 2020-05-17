@@ -4,27 +4,33 @@
         <!-- 轮播图 -->
         <swiper indicator-dots="true" indicator-color="white" indicator-active-color="#007AFF" autoplay="true" interval="2000" circular="true">
             <swiper-item>
-                <img src="../../../static/images/c.png" alt="">
+                <img :src="urlimg" alt="">
             </swiper-item>
             <swiper-item>
-                <img src="../../../static/images/c.png" alt="">
+                <img :src="urlimg" alt="">
             </swiper-item>
             <swiper-item>
-                <img src="../../../static/images/c.png" alt="">
+                <img :src="urlimg" alt="">
             </swiper-item>
         </swiper>
+        <!-- 音乐 -->
+        <div class="music" @click="domusic">
+            <img class="start" v-show="ismusic" src="../../../static/images/start.png" alt="">
+            <img v-show="!ismusic" src="../../../static/images/stop.png" alt="">
+            <audio :src="src" id="myAudio"></audio>
+        </div>
         <!-- 数据 -->
         <div class="data">
             <div>
-                <p>60</p>
+                <p>{{enroll}}</p>
                 <p>已报名</p>
             </div>
             <div>
-                <p>1552</p>
+                <p>{{sumVote}}</p>
                 <p>总投票</p>
             </div>
             <div>
-                <p>6761</p>
+                <p>{{browse}}</p>
                 <p>浏览量</p>
             </div>
         </div>
@@ -34,12 +40,13 @@
         </div>
         <!-- 倒计时 -->
         <div class="countdown">
-            <p>距离活动结束：{{day}}天{{hr}}小时{{min}}分{{sec}}秒</p>
+            <p v-show="!timeshow">距离活动结束：{{day}}天{{hr}}小时{{min}}分{{sec}}秒</p>
+            <p v-show="timeshow">距离活动结束：活动已结束</p>
         </div>
         <!-- 搜索用户 -->
         <div class="user">
-            <input type="text" placeholder="姓名">
-            <p>搜索</p>
+            <input type="text" placeholder="姓名" v-model="username">
+            <p @click="dosearch(username)">搜索</p>
         </div>
         <!-- 选择分组 -->
         <div class="menu">
@@ -52,9 +59,9 @@
         </div>
         <!-- 用户详情 -->
         <div class="detail">
-            <div class="one" @click="toplayer(item.id)" v-for="(item, index) in activetydata" :key="index">
+            <div class="one" @click="toplayer(item.id)" v-for="(item, index) in list" :key="index">
                 <div class="image">
-                    <img :src="item.img" alt="">
+                    <img :src="item.coverImg" alt="" lazy-load="true">
                 </div>
                 <div class="bottom">
                     <p class="num">编号:{{item.id}}</p>
@@ -65,7 +72,7 @@
             </div>
         </div>
         <!-- 底部 -->
-        <div class="footer">
+        <div class="footer" v-show="nomore">
             <p>已经到底部了~</p>
         </div>
         <!-- 左侧fixed -->
@@ -78,44 +85,136 @@
     </div>
 </template>
 <script>
-// import axios from '../../api/axios'
+import fly from '../../api/hongp'
 export default {
     data() {
         return {
-            day:0,hr:0,min:0,sec:0,
-            list:[],
+            day:0,hr:0,min:0,sec:0, //时间
             array: ['选择分组','北大青鸟鲁广校区', '北大青鸟光谷校区', '北大青鸟光谷学院', '课工场华中直营总校','课工场徐东校区','课工场光谷校区','课工场郑州兰德校区','北大青鸟徐东校区'],
-            index: 0,
-            activetydata:[
-                {"id":"0","name":"杨幂","rank":"1","ticket":"246","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=481823748,3803020137&fm=58&app=83&f=JPEG?w=250&h=250&s=B9166094023B4794C78571F803008034"},
-                {"id":"1","name":"刘诗诗","rank":"2","ticket":"235","price":"18","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3301421587,374458331&fm=58&app=83&f=JPEG?w=250&h=250&s=DA88AF476E23768C991018B303008060"},
-                {"id":"2","name":"赵丽颖","rank":"3","ticket":"211","img":"https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1833321872,1873644000&fm=58&app=83&f=JPEG?w=250&h=250&s=54F813D7523B5394D7AF02A003007029"},
-                {"id":"3","name":"杨紫","rank":"4","ticket":"190","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=2750998680,3202774404&fm=58&app=83&f=JPEG?w=250&h=250&s=50251F704B234A191C4C31D30300C0A2"},
-                {"id":"4","name":"唐嫣","rank":"5","ticket":"182","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3725561364,1533965488&fm=58&app=83&f=JPEG?w=250&h=250&s=BEA3F3077E236E152080197D0300D038"},
-                {"id":"5","name":"范冰冰","rank":"6","ticket":"170","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=4147546222,1928275276&fm=58&app=83&f=JPEG?w=250&h=250&s=4DECA844EC3A6294D40834D80300D090"},
-                {"id":"6","name":"江疏影","rank":"7","ticket":"159","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1791842419,2459555808&fm=58&app=83&f=JPEG?w=250&h=250&s=AB02CF0038BB7294C49C60DE0300E0B0"},
-                {"id":"7","name":"佟丽娅","rank":"8","ticket":"142","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1959205732,3947920150&fm=58&app=83&f=JPEG?w=250&h=250&s=7D2BBF578A335784329870E90300A068"},
-                {"id":"8","name":"刘涛","rank":"9","ticket":"135","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3015639301,787232821&fm=58&app=83&f=JPEG?w=250&h=250&s=1A21716CD432059C95E872980300C09C"},
-                {"id":"9","name":"林心如","rank":"10","ticket":"123","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=2591412328,489739705&fm=58&app=83&f=JPG?w=250&h=250&s=A5FA7397162366B4043070E20300E022"},
-            ],
+            groupname:'', //当前所属区
+            listnum:[], //区分组
+            index: 0, //分组索引
+            activetydata:[], //总数据
+            timeshow:false, //结束时间
+            src:'', //音乐路径
+            ismusic:true, //音乐是否播放
+            urlimg:'', //轮播图
+            endtime:'', //结束时间
+            music:'', //音乐地址
+            enroll:'', //已报名
+            sumVote:'', //总投票
+            browse:'', //浏览量
+            username:'', //搜索用户
+            nomore:false, //暂无更多
+            list:[], //上拉列表数据
+            start:1, //页码
+            commit:8 //条数
         }
+    },
+    onReady (e) {
+        // 使用 wx.createAudioContext 获取 audio 上下文 context
+        this.audioCtx = wx.createAudioContext('myAudio')
+        // this.audioCtx.setSrc(this.music)
+        this.audioCtx.play()
     },
     created() {
         this.countdown();//调用倒计时
-
-        // axios.get('../../../static/json/user.json').then((res)=>{
-        //     console.log(res);
-        // })
-        // this.getdata();
+        this.$fly.post(fly.getindex,{activityId:1})
+		.then((res)=>{
+            // console.log(res.data.data.hdActivity);
+			res.data.data.coverList.map((item)=>{
+                return this.urlimg=item.url
+            })
+            let {end,music,enroll,sumVote,browse}=res.data.data.hdActivity
+            this.endtime=end
+            this.music=music
+            this.enroll=enroll
+            this.sumVote=sumVote
+            this.browse=browse
+        })
+        this.$fly.post(fly.getplayer,{
+            activityId:1,
+            groupId:'',
+            name:''
+        })
+        .then((res)=>{
+            // console.log(res.data);
+            let num=this.array[1]
+            this.activetydata=res.data.rows
+            // this.listnum=this.activetydata.filter((item)=>item.groupName==num)
+            this.listnum=this.activetydata.slice(0,this.start*this.commit)
+            // console.log(this.listnum);
+            this.list=this.listnum
+        })
     },
-    onLoad(options) {
-        this.getdata();
+    // 下拉刷新页面数据
+    onPullDownRefresh() {
+        this.$fly.post(fly.getindex,{activityId:1})
+		.then((res)=>{
+            let {end,music,enroll,sumVote,browse}=res.data.data.hdActivity
+            this.endtime=end
+            this.music=music
+            this.enroll=enroll
+            this.sumVote=sumVote
+            this.browse=browse
+        })
+        setTimeout(() => {
+            wx.stopPullDownRefresh();            
+        }, 1500);
+    },
+    // 上拉加载更多
+    onReachBottom () {
+        // console.log('触底了')
+        if(!this.nomore){
+            this.loadMore();
+        }
     },
     methods: {
         //选择分组
         bindPickerChange(e){
-            console.log(e);
+            // console.log(e)
             this.index = e.mp.detail.value
+            let num=this.array[this.index]
+            this.$fly.post(fly.getplayer,{activityId:1})
+            .then((res)=>{
+                // console.log(res.data.rows);
+                this.activetydata=res.data.rows
+                this.listnum=this.activetydata.filter((item)=>item.groupName==num)
+                // console.log(this.listnum);
+                this.list=this.listnum
+                // console.log(this.list);
+                if(this.list.length==this.listnum.length){
+                    this.nomore=true
+                }
+            })
+        },
+        //加载更多
+        loadMore(){
+            let that=this
+            this.start++;
+            wx.showLoading({
+                title: '加载中',
+            })
+            setTimeout(function () {
+                if(that.index==0){
+                    wx.hideLoading()
+                    that.list=that.activetydata.slice(0,that.start*that.commit)
+                    // console.log(that.list);
+                }
+            }, 1000)
+            if(this.list.length==this.activetydata.length){
+                wx.hideLoading()
+                that.nomore=true;
+            }
+        },
+        //搜索
+        dosearch(username){
+            if(username!=''){
+                this.list=this.list.filter((item)=>item.name==this.username)
+                this.nomore=true
+            }else{
+                return  false
+            }
         },
         //去列表页
         toacvivety(){
@@ -132,22 +231,27 @@ export default {
             let url="../player/main?id="+id
             wx.navigateTo({url})
         },
-        getdata(){
-            wx.request({
-                url: '../../../static/json/user.json',
-                header: {
-                    'content-type': 'application/json' // 默认值
-                },
-                success (res) {
-                    res=JSON.parse(res)
-                    console.log(res.data)
-                }
-            })
+        //音乐
+        domusic(){
+            this.ismusic=!this.ismusic
+            if(this.ismusic){
+                this.audioPlay()
+            }else{
+                this.audioPause()
+            }
+        },
+        //开始音乐
+        audioPlay () {
+            this.audioCtx.play()
+        },
+        //暂停音乐
+        audioPause () {
+            this.audioCtx.pause()
         },
         //倒计时
         countdown () {
             // 定义结束时间戳
-            const end = Date.parse(new Date('2020-5-31 00:00:00'))
+            const end = Date.parse(new Date(this.endtime))
             // 定义当前时间戳
             const now = Date.parse(new Date())
             // 做判断当倒计时结束时都为0
@@ -156,6 +260,7 @@ export default {
                 this.hr = 0
                 this.min = 0
                 this.sec = 0
+                this.timeshow=true
                 return
             }
             // 用结束时间减去当前时间获得倒计时时间戳
@@ -194,6 +299,29 @@ export default {
     }
     .body-bg{
         background: #EEEEEE;
+        position: relative;
+    }
+    .music{
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        right: 10px;
+        top: 20px;
+    }
+    @keyframes rotation{
+        from {-webkit-transform: rotate(0deg);}
+        to {-webkit-transform: rotate(360deg);}
+    }
+    .music .start{
+        -webkit-transform: rotate(360deg);
+        animation: rotation 3s linear infinite;
+        -moz-animation: rotation 3s linear infinite;
+        -webkit-animation: rotation 3s linear infinite;
+        -o-animation: rotation 3s linear infinite;
+    }
+    .music img{
+        width: 100%;
+        border-radius: 50%;
     }
     .data{
         width: 95%;
@@ -284,34 +412,41 @@ export default {
     .detail{
         width: 95%;
         margin: 0 auto;
+        /* margin-top: 20px; */
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
     }
     .detail>div{
         width: 48%;
-        height: 250px;
+        height: 350px;
         background: white;
-        margin-top: 10px;
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         position: relative;
     }
     .detail>div .image{
-        flex: 6;
+        flex: 7;
     }
     .detail>div .image img{
         width: 100%;
     }
     .detail>div .bottom{
-        flex: 4;
+        flex: 3;
         padding: 10px;
+        padding-bottom: 20px;
         box-sizing: border-box;
     }
     .detail>div .num{
         position: absolute;
         top: 0;
+        left: 0;
         font-size: 14px;
+        color: white;
+        background: rgba(0, 0, 0, .5);
+        padding: 5px;
+        box-sizing: border-box;
     }
     .detail>div .name{
         color: gray;

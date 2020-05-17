@@ -16,9 +16,9 @@
         <div class="box" @click="toactivety">
             <h3 class="title">热门活动</h3>
             <div class="menu">
-                <h3 class="ID">1</h3>
-                <h3 class="name">宏鹏教育程序员美...</h3>
-                <p class="num">6760</p>
+                <h3 class="ID">{{id}}</h3>
+                <h3 class="name">{{name}}</h3>
+                <p class="num">{{browse}}</p>
                 <div class="image">
                     <img src="../../../static/images/fire.png" alt="">
                 </div>
@@ -31,7 +31,38 @@
     </div>
 </template>
 <script>
+import fly from '../../api/hongp'
 export default {
+    data() {
+        return {
+            activedata:{},
+            id:'',
+            name:'' ,
+            browse:''
+        }
+    },
+    filters:{ //字段过长显示小数点
+        ellipsis(val){
+            let len=val.length
+            if(!val){return ''}
+            if(val.len>6){
+                return val.slice(0,7)+'...'
+            }
+            return val;
+        }
+    },
+    created() {
+        this.$fly.post(fly.getactive)
+		.then((res)=>{
+            // console.log(res.data.data);
+            let {id}=res.data.data[0]
+            let {name}=res.data.data[0]
+            let {browse}=res.data.data[0]
+            this.id=id
+            this.name=name
+            this.browse=browse
+        })
+    },
     methods: {
         toactivety(){
             let url='../activety-item/main'
@@ -76,6 +107,11 @@ export default {
     .menu .name{
         font-weight: bold;
         margin-left: 30px;
+        display:block ;
+        white-space:nowrap;
+        overflow:hidden;
+
+        text-overflow:ellipsis;
     }
     .menu .num{
         color: gray;

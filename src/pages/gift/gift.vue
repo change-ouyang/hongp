@@ -3,25 +3,25 @@
         <div class="body">
             <!-- 头像 -->
             <div class="user-photo">
-                <img :src="photo" alt="">
+                <img :src="avatar" alt="">
                 <p style="margin-top:5px">{{name}}</p>
             </div>
             <!-- 数据 -->
             <div class="data">
                 <div>
-                    <p>6</p>
+                    <p>{{i}}</p>
                     <p>排名</p>
                 </div>
                 <div>
-                    <p>32</p>
+                    <p>{{ticket}}</p>
                     <p>票数</p>
                 </div>
                 <div>
-                    <p>0</p>
+                    <p>{{gift}}</p>
                     <p>礼物</p>
                 </div>
                 <div>
-                    <p>1064</p>
+                    <p>{{browse}}</p>
                     <p>浏览量</p>
                 </div>
             </div>
@@ -32,12 +32,12 @@
             <!-- 礼物 -->
             <div class="gifts">
                 <div class="'box" v-for="(item, index) in giftdata" :key="index" @click="dobox(item.id)">
-                    <div :class="{boxbg:index==nowindex}">
+                    <div :class="{boxbg:item.id==nowindex}">
                         <p class="name">{{item.name}}</p>
-                        <img class="image" :src="item.img" alt="">
+                        <img class="image" mode="aspectFit" :src="item.icon" alt="">
                     </div>
                     <div class="count">
-                        +{{item.count}}票
+                        +{{item.ticket}}票
                     </div>
                 </div>
             </div>
@@ -61,46 +61,47 @@
     </div>
 </template>
 <script>
+import fly from '../../api/hongp'
 export default {
     data() {
         return {
-            giftdata:[
-                {"id":"0","name":"棒棒糖","count":"20","price":"0.01","img":"/static/images/gift/g1.png"},
-                {"id":"1","name":"花花","count":"65","price":"18","img":"/static/images/gift/g2.png"},
-                {"id":"2","name":"么么哒","count":"99","price":"25","img":"/static/images/gift/g3.png"},
-                {"id":"3","name":"666","count":"240","price":"50","img":"/static/images/gift/g4.png"},
-                {"id":"4","name":"告白气球","count":"550","price":"98","img":"/static/images/gift/g5.png"},
-                {"id":"5","name":"小心心","count":"1000","price":"168","img":"/static/images/gift/g6.png"},
-                {"id":"6","name":"神灯","count":"2188","price":"258","img":"/static/images/gift/g7.png"},
-                {"id":"7","name":"皇冠","count":"2888","price":"328","img":"/static/images/gift/g8.png"},
-                {"id":"8","name":"宝箱","count":"6888","price":"648","img":"/static/images/gift/g9.png"},
-            ],
-            playerdata:[
-                {"id":"0","name":"杨幂","rank":"1","ticket":"246","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=481823748,3803020137&fm=58&app=83&f=JPEG?w=250&h=250&s=B9166094023B4794C78571F803008034"},
-                {"id":"1","name":"刘诗诗","rank":"2","ticket":"235","price":"18","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3301421587,374458331&fm=58&app=83&f=JPEG?w=250&h=250&s=DA88AF476E23768C991018B303008060"},
-                {"id":"2","name":"赵丽颖","rank":"3","ticket":"211","img":"https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1833321872,1873644000&fm=58&app=83&f=JPEG?w=250&h=250&s=54F813D7523B5394D7AF02A003007029"},
-                {"id":"3","name":"杨紫","rank":"4","ticket":"190","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=2750998680,3202774404&fm=58&app=83&f=JPEG?w=250&h=250&s=50251F704B234A191C4C31D30300C0A2"},
-                {"id":"4","name":"唐嫣","rank":"5","ticket":"182","img":"https://dss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3725561364,1533965488&fm=58&app=83&f=JPEG?w=250&h=250&s=BEA3F3077E236E152080197D0300D038"},
-                {"id":"5","name":"范冰冰","rank":"6","ticket":"170","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=4147546222,1928275276&fm=58&app=83&f=JPEG?w=250&h=250&s=4DECA844EC3A6294D40834D80300D090"},
-                {"id":"6","name":"江疏影","rank":"7","ticket":"159","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1791842419,2459555808&fm=58&app=83&f=JPEG?w=250&h=250&s=AB02CF0038BB7294C49C60DE0300E0B0"},
-                {"id":"7","name":"佟丽娅","rank":"8","ticket":"142","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=1959205732,3947920150&fm=58&app=83&f=JPEG?w=250&h=250&s=7D2BBF578A335784329870E90300A068"},
-                {"id":"8","name":"刘涛","rank":"9","ticket":"135","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3015639301,787232821&fm=58&app=83&f=JPEG?w=250&h=250&s=1A21716CD432059C95E872980300C09C"},
-                {"id":"9","name":"林心如","rank":"10","ticket":"123","img":"https://dss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=2591412328,489739705&fm=58&app=83&f=JPG?w=250&h=250&s=A5FA7397162366B4043070E20300E022"},
-            ],
-            num:'1',
-            price:'0.01',
-            count:'20',
+            giftdata:[],
+            playerdata:[],
+            num:'0',
+            price:'',
+            count:'',
             show:false,
             typeid:'', //判断当前id
-            nowindex:0,
-            name:'',
-            photo:''
+            nowindex:'',
+            id:'',
+            i:'', //排名
+            avatar:'', //头像
+            name:'', //姓名
+            ticket:'', //票数
+            gift:'', //礼物
+            browse:'', //浏览量
         }
     },
+    created() {
+        this.$fly.post(fly.getgift,{activityId:1,id:1})
+        .then((res)=>{
+            // console.log(res);
+            this.giftdata=res.data.data.hdGift
+        })
+    },
     onLoad(options){
-        let list=this.playerdata.filter((item)=>item.id==options.id)
-        this.name=list[0].name
-        this.photo=list[0].img
+        this.id=options.id
+        this.$fly.post(fly.getplayerdetail,{activityId:1,id:this.id})
+        .then((res)=>{
+            // console.log(res.data.data);
+            let {i,ticket,gift,browse,name,coverImg}=res.data.data.player
+            this.i=i
+            this.avatar=coverImg
+            this.name=name
+            this.ticket=ticket
+            this.gift=gift
+            this.browse=browse
+        })
     },
     methods: {
         // 点击当前块
@@ -109,10 +110,11 @@ export default {
                 return item.id==id
             })
             this.price=list[0].price
-            this.count=list[0].count
+            this.count=list[0].ticket
             this.num=1
-            this.typeid=id //判断当前id
-            this.nowindex=id //点击当前的id
+            this.typeid=id //判断当前数量id
+            this.nowindex=id //点击当前选中的id
+            // console.log(this.nowindex);
         },
         // 点击--
         dosub(){
@@ -135,7 +137,7 @@ export default {
                 return item.id==this.typeid
             })
             // console.log(list);
-            this.count=this.num * list[0].count
+            this.count=this.num * list[0].ticket
             this.price=this.num * list[0].price
         },
         // 点击++
@@ -159,47 +161,104 @@ export default {
                 return item.id==this.typeid
             })
             // console.log(list);
-            this.count=this.num * list[0].count
+            this.count=this.num * list[0].ticket
             this.price=this.num * list[0].price
         },
         // 点击提交
         dosend(){
-            wx.showModal({
-                title: '提示',
-                content: '是否支付',
+            let that=this;
+            let total=that.price*100;
+            wx.login({
                 success (res) {
-                    if (res.confirm) {
-                        wx.showLoading({
-                            title: '支付中',
-                        })
-                        setTimeout(function () {
-                            wx.hideLoading()
-                        }, 2500)
-                        setTimeout(function () {
-                            wx.showToast({
-                                title: '支付成功',
-                                icon: 'success',
-                                duration: 2000
+                    // console.log(res);
+                    that.$fly.post(fly.getpayment,{
+                        js_code:res.code,
+                        total_fee:total
+                    })
+                    .then((res)=>{
+                        // console.log(res.data);
+                        if (res.data.code==0) {
+                            //发起微信支付
+                            wx.requestPayment({
+                                timeStamp: res.data.data.timeStamp,
+                                nonceStr: res.data.data.nonceStr,
+                                package: res.data.data.package,
+                                signType: res.data.data.signType,
+                                paySign: res.data.data.paySign,
+                                success (response) {
+                                    console.log('111');
+                                    var values=wx.getStorageSync('key')
+                                    var user=wx.getStorageSync('userInfo')
+                                    // console.log(values);
+                                    // console.log(user);
+                                    that.$fly.post(fly.getgiftVote,{
+                                        extend1:values,
+                                        extend2:user.nickName,
+                                        extend3:user.avatarUrl,
+                                        playerId:that.id,
+                                        giftId:that.nowindex,
+                                        quantity:that.num,
+                                        amount:that.price,
+                                        ticket:that.count,
+                                        activityId:1,
+                                    })
+                                    .then((res)=>{
+                                        console.log(res);
+                                    })
+                                    that.$fly.post(fly.getorder,{
+                                        orderId:res.data.data.orderId
+                                    })
+                                    .then((res)=>{
+                                        // this.dosend()
+                                        console.log(res);
+                                    })
+                                },
+                                fail (res) {
+                                    console.log('222');
+                                }
                             })
-                        }, 2500)
-                    }else if(res.cancel) {
-                        wx.showLoading({
-                            title: '取消中',
-                        })
-                        setTimeout(function () {
-                            wx.hideLoading()
-                        }, 2500)
-                        setTimeout(function () {
-                            wx.showToast({
-                                title: '取消支付',
-                                icon: 'none',
-                                duration: 2000
-                            })
-                        }, 2500)
-                        
-                    }
+                        } else {
+                            console.log('登录失败！' + res.errMsg)
+                        }
+                    })
                 }
             })
+            // wx.showModal({
+            //     title: '提示',
+            //     content: '是否支付',
+            //     success (res) {
+            //         if (res.confirm) {
+            //             wx.showLoading({
+            //                 title: '支付中',
+            //             })
+            //             setTimeout(function () {
+            //                 wx.hideLoading()
+            //             }, 2500)
+            //             setTimeout(function () {
+            //                 wx.showToast({
+            //                     title: '支付成功',
+            //                     icon: 'success',
+            //                     duration: 2000
+            //                 })
+            //             }, 2500)
+            //         }else if(res.cancel) {
+            //             wx.showLoading({
+            //                 title: '取消中',
+            //             })
+            //             setTimeout(function () {
+            //                 wx.hideLoading()
+            //             }, 2500)
+            //             setTimeout(function () {
+            //                 wx.showToast({
+            //                     title: '取消支付',
+            //                     icon: 'none',
+            //                     duration: 2000
+            //                 })
+            //             }, 2500)
+                        
+            //         }
+            //     }
+            // })
         }
     },
 }
